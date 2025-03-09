@@ -8,24 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TODO item represents an item in the MongoDB
-type TodoItem struct {
-	ID    string `json:"id" bson:"_id"`
-	Title string `json:"title" bson:"title"`
-	Done  bool   `json:"done" bson:"done"`
-}
-
 // TODO handler handles the HTTP requests for TODO items
 type TodoHandler struct {
-	todoItems []TodoItem
+	todoItemRopository *TodoItemRepository
 }
 
 // NewTodoHandler creates a new TODO handler
 func NewTodoHandler() *TodoHandler {
 	return &TodoHandler{
-		todoItems: []TodoItem{
-			{ID: "1", Title: "Learn Go", Done: false},
-		},
+		todoItemRopository: NewTodoItemRepository(),
 	}
 }
 
@@ -38,7 +29,9 @@ func (h *TodoHandler) SayHello(c *gin.Context) {
 // GetTodoItems handles GET requests to retrieve all TODO items
 func (h *TodoHandler) GetTodoItems(c *gin.Context) {
 	log.Println("Fetching all TODO items")
-	c.JSON(http.StatusOK, h.todoItems)
+	// Get the MongoDB collection from the client
+	todos := h.todoItemRopository.GetAllTodos()
+	c.JSON(http.StatusOK, todos)
 }
 
 // CreateTodoItem handles POST requests to create a new TODO item
@@ -48,8 +41,9 @@ func (h *TodoHandler) CreateOrUpdateTodoItem(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	h.todoItems = append(h.todoItems, todoItem)
-	c.JSON(http.StatusCreated, todoItem)
+
+	insertedTodo := h.todoItemRopository.CreateOrUpdateTodoItem(&todoItem)
+	c.JSON(http.StatusCreated, insertedTodo)
 }
 
 // GetTodoItem handles GET requests to retrieve a specific TODO item by ID
