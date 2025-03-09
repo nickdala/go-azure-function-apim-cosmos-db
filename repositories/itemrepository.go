@@ -1,12 +1,12 @@
-package main
+package repositories
 
 import (
 	"context"
 	"log"
 	"os"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -21,12 +21,6 @@ type TodoItem struct {
 type TodoItemRepository struct {
 	// MongoDB client
 	mongodbClient *mongo.Client
-
-	// MongoDB database
-	databaseName string
-
-	// Collection name
-	collectionName string
 }
 
 // NewTodoItemRepository creates a new TODO item repository
@@ -51,14 +45,18 @@ func NewTodoItemRepository() *TodoItemRepository {
 
 	log.Println("Connected to Cosmos DB MongoDB instance!")
 	return &TodoItemRepository{
-		mongodbClient:  client,
-		databaseName:   "todosdb",
-		collectionName: "todos",
+		mongodbClient: client,
 	}
 }
 
+// Return the todos collection
+func (repo *TodoItemRepository) getCollection() *mongo.Collection {
+	collection := repo.mongodbClient.Database("todosdb").Collection("todos")
+	return collection
+}
+
 func (repo *TodoItemRepository) GetAllTodos() []*TodoItem {
-	collection := repo.mongodbClient.Database(repo.databaseName).Collection(repo.collectionName)
+	collection := repo.getCollection()
 
 	// Find all TODO items
 	cursor, err := collection.Find(context.TODO(), nil)
@@ -79,21 +77,56 @@ func (repo *TodoItemRepository) GetAllTodos() []*TodoItem {
 	return todoItems
 }
 
+func (repo *TodoItemRepository) CreateTodoItem(todoItem *TodoItem) *TodoItem {
+	collection := repo.getCollection()
+
+	// Insert the TODO item into the collection
+	result, err := collection.InsertOne(context.TODO(), todoItem)
+	if err != nil {
+		log.Fatalf("Failed to insert TODO item: %v", err)
+	}
+	todoItem.ID = result.InsertedID.(primitive.ObjectID).Hex()
+	return todoItem
+}
+
+func (repo *TodoItemRepository) UpdateTodoItem(todoItem *TodoItem) *TodoItem {
+	collection := repo.getCollection()
+
+	// Update the TODO item in the collection
+	filter := bson.M{"_id": todoItem.ID}
+	update := bson.M{"$set": todoItem}
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatalf("Failed to update TODO item: %v", err)
+	}
+
+	return todoItem
+}
+
 func (repo *TodoItemRepository) CreateOrUpdateTodoItem(todoItem *TodoItem) *TodoItem {
-	collection := repo.mongodbClient.Database(repo.databaseName).Collection(repo.collectionName)
 
 	// Check if the ID is empty, if so, generate a new ID
 	if todoItem.ID == "" {
-		// Set the ID field to a new unique ID
-		todoItem.ID = primitive.NewObjectID()
+		return repo.CreateTodoItem(todoItem)
 	}
 
-	// Insert or update the TODO item
-	filter := bson.M{"_id": todoItem.ID}
-	update := bson.M{"$set": todoItem}
-	opts := options.UpdateOne().SetUpsert(true)
-	result, err := collection.UpdateOne(context.TODO(), filter, update, opts)
+	return repo.UpdateTodoItem(todoItem)
+}
+
+func (repo *TodoItemRepository) GetTodoItemByID(id string) (*TodoItem, error) {
+	collection := repo.getCollection()
+
+	// Convert the ID string to an ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		log.Fatalf("Failed to create or update TODO item: %v", err)
+		return nil, err
 	}
+
+	var todoItem TodoItem
+	err = collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&todoItem)
+	if err != nil {
+		return nil, err
+	}
+
+	return &todoItem, nil
 }
