@@ -87,7 +87,7 @@ Below is an example of how to do this using `curl`:
 curl -X POST http://localhost:7071/api/todos \
 -H "Content-Type: application/json" \
 -d '{
-  "title": "My Todo",
+  "title": "Buy groceries",
   "done": false
 }'
 ```
