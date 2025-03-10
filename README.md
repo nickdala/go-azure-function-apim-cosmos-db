@@ -115,7 +115,7 @@ This will return the details of the specified todo item.
 To update a todo item, send a PUT request to the `/api/todos/{id}` endpoint with the updated JSON payload:
 
 ```bash
-curl -X PUT http://localhost:7071/api/todos/{id} \
+curl -X POST http://localhost:7071/api/todos \
 -H "Content-Type: application/json" \
 -d '{
   "id": "{id}",
@@ -123,3 +123,14 @@ curl -X PUT http://localhost:7071/api/todos/{id} \
   "done": true
 }'
 ```
+
+#### TODO Change the following to PUT
+```bash
+curl -X PUT http://localhost:7071/api/todos/{id} \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "My Todo",
+  "done": true
+}'
+```
+This will update the specified todo item in the database.
