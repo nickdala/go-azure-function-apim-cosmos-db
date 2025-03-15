@@ -102,9 +102,6 @@ module storageRoleAssignmentUserIdentityApi 'core/storage/storage-Access.bicep' 
   }
 }
 
-
-
-
 // The application function app
 module appServicePlan './core/host/appserviceplan.bicep' = {
   name: 'appserviceplan'
@@ -122,3 +119,59 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
   }
 }
 
+
+// Monitor application with Azure Monitor
+module monitoring './core/monitor/monitoring.bicep' = {
+  name: 'monitoring'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
+    applicationInsightsName: '${abbrs.insightsComponents}${resourceToken}'
+    disableLocalAuth: true 
+  }
+}
+
+
+var monitoringRoleDefinitionId = '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher role ID
+
+// Allow access from api to application insights using a managed identity
+module appInsightsRoleAssignmentApi './core/monitor/appinsights-access.bicep' = {
+  name: 'appInsightsRoleAssignmentapi'
+  scope: rg
+  params: {
+    appInsightsName: monitoring.outputs.applicationInsightsName
+    roleDefinitionID: monitoringRoleDefinitionId
+    principalID: apiUserAssignedIdentity.outputs.identityPrincipalId
+  }
+}
+
+module api './app/api.bicep' = {
+  name: 'api'
+  scope: rg
+  params: {
+    name: functionAppName
+    location: location
+    tags: tags
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    appServicePlanId: appServicePlan.outputs.id
+    
+    runtimeName: 'custom'
+    runtimeVersion: '20'  //TODO: what is the runtime version for custom?
+    
+    storageAccountName: storage.outputs.name
+    deploymentStorageContainerName: deploymentStorageContainerName
+    identityId: apiUserAssignedIdentity.outputs.identityId
+    identityClientId: apiUserAssignedIdentity.outputs.identityClientId
+    appSettings: {
+    }
+  }
+}
+
+
+// App outputs
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
+output AZURE_LOCATION string = location
+output AZURE_TENANT_ID string = tenant().tenantId
+output RESOURCE_GROUP string = rg.name

@@ -31,7 +31,7 @@ resource stg 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   name: storageAccountName
 }
 
-resource functions 'Microsoft.Web/sites@2023-12-01' = {
+resource functions 'Microsoft.Web/sites@2024-04-01' = {
   name: name
   location: location
   tags: tags
@@ -71,9 +71,7 @@ resource functions 'Microsoft.Web/sites@2023-12-01' = {
     name: 'appsettings'
     properties: union(appSettings,
       {
-        AzureWebJobsStorage__blobServiceUri: stg.properties.primaryEndpoints.blob
-        AzureWebJobsStorage__queueServiceUri: stg.properties.primaryEndpoints.queue
-        AzureWebJobsStorage__tableServiceUri: stg.properties.primaryEndpoints.table
+        AzureWebJobsStorage__accountName: stg.name
         AzureWebJobsStorage__credential : 'managedidentity'
         APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
       })

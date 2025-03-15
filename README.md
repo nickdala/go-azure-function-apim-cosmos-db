@@ -133,14 +133,6 @@ Deploying services (azd deploy)
 SUCCESS: Your application was deployed to Azure in 19 seconds.
 ```
 
-### 4. Tear down the deployment
-
-Run the following command to tear down the deployment:
-
-```pwsh
-azd down --purge --force
-```
-
 ## Test the Functions
 
 Whether you are running the functions locally or have deployed them to Azure, you can test the functions using HTTP requests.
@@ -218,17 +210,10 @@ curl -X POST http://localhost:7071/api/todos \
 }'
 ```
 
+## Clean up resources
 
+When you're done working with your function app and related resources, you can use this command to delete the function app and its related resources from Azure and avoid incurring any further costs.
 
-
-
-#### TODO Change the following to PUT
-```bash
-curl -X PUT http://localhost:7071/api/todos/{id} \
--H "Content-Type: application/json" \
--d '{
-  "title": "My Todo",
-  "done": true
-}'
+```shell
+azd down --purge --force
 ```
-This will update the specified todo item in the database.
