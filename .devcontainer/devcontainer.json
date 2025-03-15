@@ -12,7 +12,12 @@
         "extensions": [
           "golang.Go",
           "ms-azuretools.azure-dev",
-          "ms-azuretools.vscode-cosmosdb"
+          "ms-azuretools.vscode-cosmosdb",
+          //bicep
+          "ms-azuretools.vscode-bicep",
+          // azure tools
+          "ms-azuretools.vscode-azurefunctions",
+          "ms-azuretools.vscode-azcli"
         ]
       }
     }
