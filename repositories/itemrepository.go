@@ -75,15 +75,6 @@ func (repo *TodoItemRepository) GetAllTodos() []TodoItem {
 		log.Fatal(err)
 	}
 
-	/*var todoItems []*TodoItem
-	for cursor.Next(context.TODO()) {
-		var todoItem TodoItem
-		if err := cursor.Decode(&todoItem); err != nil {
-			log.Fatalf("Failed to decode TODO item: %v", err)
-		}
-		todoItems = append(todoItems, &todoItem)
-	}*/
-
 	return todoItems
 }
 
@@ -113,16 +104,10 @@ func (repo *TodoItemRepository) UpdateTodoItem(todoItem *TodoItem) *TodoItem {
 	}
 	// Decode the updated TODO item
 	var updatedData TodoItem
-	if err := res.Decode(&todoItem); err != nil {
+	if err := res.Decode(&updatedData); err != nil {
 		log.Fatalf("Failed to decode updated TODO item: %v", err)
 	}
 	return &updatedData
-	/*res, err := collection.Update(context.TODO(), filter, update)
-	if err != nil {
-		log.Fatalf("Failed to update TODO item: %v", err)
-	}*/
-
-	//return todoItem
 }
 
 func (repo *TodoItemRepository) CreateOrUpdateTodoItem(todoItem *TodoItem) *TodoItem {
