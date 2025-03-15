@@ -16,3 +16,4 @@ __azurite_db*__.json
 # Go workspace artifacts
 handler
 go-azure-function-apim-cosmos-db
+.azure
