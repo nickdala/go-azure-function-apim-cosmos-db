@@ -5,7 +5,7 @@ param applicationInsightsName string = ''
 param appServicePlanId string
 param appSettings object = {}
 param runtimeName string 
-param runtimeVersion string 
+param runtimeVersion string
 param serviceName string = 'api'
 param storageAccountName string
 param deploymentStorageContainerName string

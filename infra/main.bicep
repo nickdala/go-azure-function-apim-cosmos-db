@@ -112,9 +112,9 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
     location: location
     tags: tags
     sku: {
-      //name: 'FC1'
-      //tier: 'FlexConsumption'
-      name: 'B1'
+      name: 'FC1'
+      tier: 'FlexConsumption'
+      //name: 'B1'
     }
   }
 }
@@ -157,8 +157,24 @@ module api './app/api.bicep' = {
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     appServicePlanId: appServicePlan.outputs.id
     
+    // ERROR: error executing step command 'provision': deployment failed: error deploying infrastructure: deploying to subscription:
+
+    // Deployment Error Details:
+    // BadRequest: Site.FunctionAppConfig.Runtime.Name is invalid.  The specified value of runtime name 'custom' is not supported. Please set it to one of the allowed values: dotnet-isolated, java, node, python, powershell
+    // - Site.FunctionAppConfig.Runtime.Name is invalid.  The specified value of runtime name 'custom' is not supported. Please set it to one of the allowed values: dotnet-isolated, java, node, python, powershell
+    //runtimeName: 'custom'
+    //runtimeVersion: ''  //TODO: what is the runtime version for custom?
+
+    // $ func azure functionapp publish func-api-zpqecz5wmjtn6 --no-build
+    // Your Azure Function App has 'FUNCTIONS_WORKER_RUNTIME' set to 'python' while your local project is set to 'custom'.
+    // You can pass --force to update your Azure app with 'custom' as a 'FUNCTIONS_WORKER_RUNTIME'
+
+    // $ func azure functionapp publish func-api-zpqecz5wmjtn6 --no-build --force
+    // Setting 'FUNCTIONS_WORKER_RUNTIME' to 'custom' because --force was passed
+    // We couldn't validate 'custom' runtime for Flex SKU in 'East US'.
+
     runtimeName: 'custom'
-    runtimeVersion: '20'  //TODO: what is the runtime version for custom?
+    runtimeVersion: ''
     
     storageAccountName: storage.outputs.name
     deploymentStorageContainerName: deploymentStorageContainerName
@@ -175,3 +191,6 @@ output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applica
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output RESOURCE_GROUP string = rg.name
+output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
+output AZURE_FUNCTION_NAME string = api.outputs.SERVICE_API_NAME
+output SERVICE_API_URI string = api.outputs.SERVICE_API_URI
