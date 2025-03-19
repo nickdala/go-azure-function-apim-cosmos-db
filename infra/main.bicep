@@ -7,7 +7,7 @@ param environmentName string
 
 @minLength(1)
 @description('Primary location for all resources')
-@allowed(['australiaeast', 'eastasia', 'eastus', 'eastus2', 'northeurope', 'southcentralus', 'southeastasia', 'uksouth', 'westus2'])
+//@allowed(['australiaeast', 'eastasia', 'eastus', 'eastus2', 'northeurope', 'southcentralus', 'southeastasia', 'uksouth', 'westus2'])
 param location string
 
 @description('Flag to use Azure API Management to mediate the calls between the Web frontend and the backend API')
@@ -62,6 +62,31 @@ module keyVault './core/security/keyvault.bicep' = {
   }
 }
 
+
+// Give the API access to KeyVault
+module apiKeyVaultAccess './core/security/keyvault-access.bicep' = {
+  name: 'api-keyvault-access'
+  scope: rg
+  params: {
+    keyVaultName: keyVault.outputs.name
+    principalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
+  }
+}
+
+
+// The application database
+module cosmos './app/db.bicep' = {
+  name: 'cosmos'
+  scope: rg
+  params: {
+    accountName: '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+    databaseName: 'todos'
+    location: location
+    tags: tags
+    keyVaultName: keyVault.outputs.name
+  }
+}
+
 // Backing storage for Azure functions backend processor
 module storage 'core/storage/storage-account.bicep' = {
   name: 'storage'
@@ -108,13 +133,16 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
   scope: rg
   params: {
     name: '${abbrs.webServerFarms}${resourceToken}'
-    kind: 'functionapp,linux'
+    //kind: 'functionapp,linux'
     location: location
     tags: tags
     sku: {
-      name: 'FC1'
-      tier: 'FlexConsumption'
-      //name: 'B1'
+      //name: 'FC1'
+      //tier: 'FlexConsumption'
+      //name: 'EP1'
+      //tier: 'ElasticPremium'
+      name: 'B1'
+      tier: 'Basic'
     }
   }
 }
@@ -129,23 +157,22 @@ module monitoring './core/monitor/monitoring.bicep' = {
     tags: tags
     logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
     applicationInsightsName: '${abbrs.insightsComponents}${resourceToken}'
-    disableLocalAuth: true 
   }
 }
 
 
-var monitoringRoleDefinitionId = '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher role ID
+//var monitoringRoleDefinitionId = '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher role ID
 
 // Allow access from api to application insights using a managed identity
-module appInsightsRoleAssignmentApi './core/monitor/appinsights-access.bicep' = {
-  name: 'appInsightsRoleAssignmentapi'
-  scope: rg
-  params: {
-    appInsightsName: monitoring.outputs.applicationInsightsName
-    roleDefinitionID: monitoringRoleDefinitionId
-    principalID: apiUserAssignedIdentity.outputs.identityPrincipalId
-  }
-}
+// module appInsightsRoleAssignmentApi './core/monitor/appinsights-access.bicep' = {
+//   name: 'appInsightsRoleAssignmentapi'
+//   scope: rg
+//   params: {
+//     appInsightsName: monitoring.outputs.applicationInsightsName
+//     roleDefinitionID: monitoringRoleDefinitionId
+//     principalID: apiUserAssignedIdentity.outputs.identityPrincipalId
+//   }
+// }
 
 module api './app/api.bicep' = {
   name: 'api'
@@ -156,7 +183,7 @@ module api './app/api.bicep' = {
     tags: tags
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     appServicePlanId: appServicePlan.outputs.id
-    
+    keyVaultName: keyVault.outputs.name
     // ERROR: error executing step command 'provision': deployment failed: error deploying infrastructure: deploying to subscription:
 
     // Deployment Error Details:
@@ -173,24 +200,32 @@ module api './app/api.bicep' = {
     // Setting 'FUNCTIONS_WORKER_RUNTIME' to 'custom' because --force was passed
     // We couldn't validate 'custom' runtime for Flex SKU in 'East US'.
 
-    runtimeName: 'custom'
-    runtimeVersion: ''
+    //runtimeName: 'custom'
+    //runtimeVersion: ''
     
     storageAccountName: storage.outputs.name
-    deploymentStorageContainerName: deploymentStorageContainerName
     identityId: apiUserAssignedIdentity.outputs.identityId
-    identityClientId: apiUserAssignedIdentity.outputs.identityClientId
     appSettings: {
+      AZURE_COSMOS_CONNECTION_STRING_KEY: cosmos.outputs.connectionStringKey
+      AZURE_COSMOS_DATABASE_NAME: cosmos.outputs.databaseName
+      AZURE_COSMOS_ENDPOINT: cosmos.outputs.endpoint
     }
   }
 }
 
+// Data outputs
+output AZURE_COSMOS_CONNECTION_STRING_KEY string = cosmos.outputs.connectionStringKey
+output AZURE_COSMOS_DATABASE_NAME string = cosmos.outputs.databaseName
 
 // App outputs
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output RESOURCE_GROUP string = rg.name
+output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
+output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
 output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
 output AZURE_FUNCTION_NAME string = api.outputs.SERVICE_API_NAME
 output SERVICE_API_URI string = api.outputs.SERVICE_API_URI
+output USE_APIM bool = useAPIM
+//output SERVICE_API_ENDPOINTS array = useAPIM ? [ apimApi.outputs.SERVICE_API_URI, api.outputs.SERVICE_API_URI ]: []

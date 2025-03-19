@@ -3,7 +3,6 @@ param location string = resourceGroup().location
 param tags object = {}
 
 param logAnalyticsWorkspaceId string
-param disableLocalAuth bool = false
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: name
@@ -13,7 +12,6 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: logAnalyticsWorkspaceId
-    DisableLocalAuth: disableLocalAuth
   }
 }
 
