@@ -8,6 +8,7 @@ This repository contains a sample Azure Functions project in [Go](https://go.dev
 - [Go](https://golang.org/dl/)
 - [Azure Dev CLI](https://learn.microsoft.com/en-us/azure/developer/azd/install-azd)
 - [Docker](https://www.docker.com/get-started)
+- [Terraform](https://www.terraform.io/downloads.html)
 
 There is a [DevContainer](https://code.visualstudio.com/docs/remote/containers) that can be used to build the project in a container. This is useful if you don't have Go installed on your machine.
 
