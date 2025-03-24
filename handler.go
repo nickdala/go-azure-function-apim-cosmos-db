@@ -38,6 +38,7 @@ func (h *TodoHandler) GetTodoItems(c *gin.Context) {
 
 // CreateTodoItem handles POST requests to create a new TODO item
 func (h *TodoHandler) CreateOrUpdateTodoItem(c *gin.Context) {
+	log.Println("Creating or updating TODO item")
 	var todoItem repositories.TodoItem
 	if err := c.ShouldBindJSON(&todoItem); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
@@ -60,6 +61,7 @@ func (h *TodoHandler) GetTodoItem(c *gin.Context) {
 		return
 	}
 	if todoItem != nil {
+		log.Printf("TODO item found: %v", todoItem)
 		c.JSON(http.StatusOK, todoItem)
 		return
 	}
