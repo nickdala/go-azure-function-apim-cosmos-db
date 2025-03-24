@@ -6,12 +6,16 @@ This repository contains a sample Azure Functions project in [Go](https://go.dev
 - [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [Go](https://golang.org/dl/)
+- [Azure Dev CLI](https://learn.microsoft.com/en-us/azure/developer/azd/install-azd)
+- [Docker](https://www.docker.com/get-started)
 
 There is a [DevContainer](https://code.visualstudio.com/docs/remote/containers) that can be used to build the project in a container. This is useful if you don't have Go installed on your machine.
 
 You can open the project in Visual Studio Code and select the "Reopen in Container" option. Or you can use [CodeSpaces](https://github.com/features/codespaces) to build the project in the cloud.
 
-## Build
+## Local Development
+
+### Build the Project
 
 To build the Azure Functions project, run the following command in the root directory of the project:
 
@@ -20,7 +24,7 @@ go build handler.go
 ```
 This will create an executable file named `handler` in the root directory.
 
-## Run the Docker Container
+### Run the Docker Container
 
 The project includes a `docker-compose.yml` file that defines a Docker container for MongoDB. To run the container, use the following command:
 
@@ -29,7 +33,7 @@ docker compose up -d
 ```
 This will start a MongoDB container in detached mode. You can access the MongoDB instance at `mongodb://localhost:27017`.
 
-## Start the Azure Functions Host
+### Start the Azure Functions Host
 
 To start the Azure Functions host, run the following command in the root directory of the project:
 
@@ -52,9 +56,93 @@ Functions:
         hello: [GET] http://localhost:7071/api/hello
 ```
 
+## Deploy to Azure
+
+### 1. Log in to Azure
+Before deploying, you must be authenticated to Azure and have the appropriate subscription selected. Run the following command to authenticate:
+
+```
+az login
+```
+
+If you have multiple tenants, you can use the following command to log into the tenant:
+
+```shell
+az login --tenant <tenant-id>
+```
+
+Set the subscription to the one you want to use (you can use az account list to list available subscriptions):
+
+```
+export AZURE_SUBSCRIPTION_ID="<your-subscription-id>"
+```
+
+```
+az account set --subscription $AZURE_SUBSCRIPTION_ID
+```
+
+Use the next command to login with the Azure Dev CLI (AZD) tool:
+
+```
+azd auth login
+```
+
+If you have multiple tenants, you can use the following command to log into the tenant:
+
+```
+azd auth login --tenant-id <tenant-id>
+```
+
+### 2. Create a new environment
+
+Next we provide the AZD tool with variables that it uses to create the deployment. The first thing we initialize is the AZD environment with a name.
+
+```
+azd env new <pick_a_name>
+```
+
+Select the subscription that will be used for the deployment:
+
+```
+azd env set AZURE_SUBSCRIPTION_ID $AZURE_SUBSCRIPTION_ID
+```
+
+Set the Azure region to be used:
+
+```
+azd env set AZURE_LOCATION <pick_a_region>
+```
+
+### 3. Create the Azure resources and deploy the code
+
+Run the following command to create the Azure resources and deploy the code (about 15-minutes to complete):
+
+```
+azd up
+```
+
+The deployment process will output the URL of the deployed application.
+
+```
+Apply complete! Resources: 0 added, 2 changed, 0 destroyed.
+
+Outputs:
+
+azure_function_name = "blogfunction-honest-catfish"
+azure_function_url = "blogfunction-honest-catfish.azurewebsites.net"
+
+
+SUCCESS: Your application was deployed to Azure in 19 seconds.
+```
+
 ## Test the Functions
 
+Whether you are running the functions locally or have deployed them to Azure, you can test the functions using HTTP requests.
+
 You can use a tool like [Postman](https://www.postman.com/) or [curl](https://curl.se/) to send the request.
+
+HTTP requests either go to the local host or the Azure URL, depending on whether you are running locally or have deployed to Azure. The local host URL is `http://localhost:7071/api/{functionName}` and the Azure URL is `https://<your-app-name>.azurewebsites.net/api/{functionName}`.
+
 
 ### Get the Hello Function
 To test the hello function, run the fullowing.
@@ -124,13 +212,10 @@ curl -X POST http://localhost:7071/api/todos \
 }'
 ```
 
-#### TODO Change the following to PUT
-```bash
-curl -X PUT http://localhost:7071/api/todos/{id} \
--H "Content-Type: application/json" \
--d '{
-  "title": "My Todo",
-  "done": true
-}'
+## Clean up resources
+
+When you're done working with your function app and related resources, you can use this command to delete the function app and its related resources from Azure and avoid incurring any further costs.
+
+```shell
+azd down --purge --force
 ```
-This will update the specified todo item in the database.

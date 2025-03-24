@@ -82,7 +82,6 @@ func SetupRouter() *gin.Engine {
 }
 
 // main function initializes the router and starts the server
-
 func main() {
 
 	router := SetupRouter()
