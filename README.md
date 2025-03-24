@@ -124,10 +124,12 @@ azd up
 The deployment process will output the URL of the deployed application.
 
 ```
-Deploying services (azd deploy)
+Apply complete! Resources: 0 added, 2 changed, 0 destroyed.
 
-  (✓) Done: Deploying service application
-  - Endpoint: https://app-nickdalasql.azurewebsites.net/
+Outputs:
+
+azure_function_name = "blogfunction-honest-catfish"
+azure_function_url = "blogfunction-honest-catfish.azurewebsites.net"
 
 
 SUCCESS: Your application was deployed to Azure in 19 seconds.

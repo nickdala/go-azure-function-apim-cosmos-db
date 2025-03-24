@@ -1,5 +1,8 @@
-resource "azurerm_linux_function_app" "example" {
-  name                = "bloggapifunction-go"
+resource "random_pet" "app" {
+}
+
+resource "azurerm_linux_function_app" "app" {
+  name                = "blogfunction-${random_pet.app.id}"
   resource_group_name = azurerm_resource_group.resource_group.name
   location            = azurerm_resource_group.resource_group.location
 

@@ -26,5 +26,5 @@ resource azurerm_role_assignment current_user_role_assignement {
 resource azurerm_role_assignment app_keyvault_role_assignment {
   scope                 = azurerm_key_vault.key_vault.id
   role_definition_name  = "Key Vault Secrets User"
-  principal_id          = azurerm_linux_function_app.example.identity[0].principal_id
+  principal_id          = azurerm_linux_function_app.app.identity[0].principal_id
 }
