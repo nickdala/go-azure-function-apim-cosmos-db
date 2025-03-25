@@ -75,7 +75,7 @@ az login --tenant <tenant-id>
 Set the subscription to the one you want to use (you can use az account list to list available subscriptions):
 
 ```
-export AZURE_SUBSCRIPTION_ID="<your-subscription-id>"
+export AZURE_SUBSCRIPTION_ID=<your-subscription-id>
 ```
 
 ```
@@ -129,8 +129,10 @@ Apply complete! Resources: 0 added, 2 changed, 0 destroyed.
 
 Outputs:
 
-azure_function_name = "blogfunction-honest-catfish"
-azure_function_url = "blogfunction-honest-catfish.azurewebsites.net"
+application_gateway_fqdn = "http://51.140.80.187"
+application_gateway_ip = "51.140.80.187"
+azure_function_name = "blogfunction-faithful-marmoset"
+azure_function_url = "blogfunction-faithful-marmoset.azurewebsites.net"
 
 
 SUCCESS: Your application was deployed to Azure in 19 seconds.
