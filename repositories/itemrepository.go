@@ -91,6 +91,7 @@ func (repo *TodoItemRepository) CreateTodoItem(todoItem *TodoItem) *TodoItem {
 }
 
 func (repo *TodoItemRepository) UpdateTodoItem(todoItem *TodoItem) *TodoItem {
+	log.Println("Updating TODO item:", todoItem)
 	collection := repo.getCollection()
 
 	// Update the TODO item in the collection
@@ -114,6 +115,7 @@ func (repo *TodoItemRepository) CreateOrUpdateTodoItem(todoItem *TodoItem) *Todo
 
 	// Check if the ID is empty, if so, generate a new ID
 	if todoItem.ID == primitive.NilObjectID {
+		log.Panicln("The ID is empty, creating a new TODO item")
 		return repo.CreateTodoItem(todoItem)
 	}
 

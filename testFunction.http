@@ -1,0 +1,40 @@
+GET http://localhost:7071/api/todos
+
+###
+
+POST http://localhost:7071/api/todos
+Content-Type: application/json
+
+{
+    "title": "Buy groceries",
+    "completed": false
+}
+
+###
+
+POST http://localhost:7071/api/todos
+Content-Type: application/json
+
+{
+    "title": "Go to the gym",
+    "completed": false
+}
+
+###
+
+GET http://localhost:7071/api/todos/{id}
+
+###
+
+GET http://localhost:7071/api/todos/67e15b10bef3a9cd1d6d72b8
+
+###
+
+POST http://localhost:7071/api/todos
+Content-Type: application/json
+
+{
+    "id": "67e15b10bef3a9cd1d6d72b8",
+    "title": "Go to the gym",
+    "done": true
+}
