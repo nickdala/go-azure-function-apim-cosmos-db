@@ -1,7 +1,13 @@
 {
     "name": "go-azure-function-apim-cosmos-db",
-    "image": "mcr.microsoft.com/devcontainers/go:1.23",
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
     "features": {
+      //go
+      "ghcr.io/devcontainers/features/go:1": {
+        "version": "1.23"
+      },
       "ghcr.io/azure/azure-dev/azd": {},
       "ghcr.io/devcontainers/features/azure-cli": {},
       "ghcr.io/devcontainers/features/terraform:1": {},
