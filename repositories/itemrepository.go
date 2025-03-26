@@ -115,7 +115,7 @@ func (repo *TodoItemRepository) CreateOrUpdateTodoItem(todoItem *TodoItem) *Todo
 
 	// Check if the ID is empty, if so, generate a new ID
 	if todoItem.ID == primitive.NilObjectID {
-		log.Panicln("The ID is empty, creating a new TODO item")
+		log.Println("The ID is empty, creating a new TODO item")
 		return repo.CreateTodoItem(todoItem)
 	}
 
