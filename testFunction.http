@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
     "title": "Buy groceries",
-    "completed": false
+    "done": false
 }
 
 ###
@@ -17,7 +17,7 @@ Content-Type: application/json
 
 {
     "title": "Go to the gym",
-    "completed": false
+    "done": false
 }
 
 ###
