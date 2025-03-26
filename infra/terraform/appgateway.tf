@@ -29,8 +29,8 @@ resource "azurerm_application_gateway" "app_gateway" {
   location            = azurerm_resource_group.resource_group.location
 
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
+    name     = "WAF_v2"
+    tier     = "WAF_v2"
     capacity = 2
   }
 
@@ -83,5 +83,15 @@ resource "azurerm_application_gateway" "app_gateway" {
     backend_address_pool_name  = "function-app-backend-pool"
     backend_http_settings_name = "function-app-http-settings"
     priority                   = 1
+  }
+
+  waf_configuration {
+    enabled            = true
+    firewall_mode      = "Detection"
+    rule_set_type      = "OWASP"
+    rule_set_version   = "3.2"
+    request_body_check = true
+    max_request_body_size_kb = 128
+    file_upload_limit_mb = 100
   }
 }
